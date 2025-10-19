@@ -6,36 +6,16 @@ require('./models/index');
 
 const port = process.env.PORT || 4000;
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-
-// Configuración de CORS mejorada
 const corsOptions = {
-    origin: function (origin, callback) {
-        // Permitir requests sin origin (como mobile apps o Postman)
-        if (!origin) return callback(null, true);
-        
-        const allowedOrigins = [
-            frontendUrl,
-            'http://localhost:5173',
-            'http://localhost:3000',
-            'http://localhost:4173'
-        ];
-        
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-            callback(null, true);
-        } else {
-            callback(new Error('No permitido por CORS'));
-        }
-    },
-    credentials: true,
+    origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
 app.get('/', (req, res) => {
     res.json({
         status: 'ok',
@@ -45,7 +25,6 @@ app.get('/', (req, res) => {
     });
 });
 
-// Health check para Railway
 app.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
@@ -54,12 +33,10 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Routes
 app.use('/api/users', require('./routes/User'));
 app.use('/api/entries', require('./routes/TimeEntry'));
 app.use('/api/tasks', require('./routes/Task'));
 
-// Manejo de rutas no encontradas
 app.use('*', (req, res) => {
     res.status(404).json({
         error: 'Ruta no encontrada',
@@ -67,7 +44,6 @@ app.use('*', (req, res) => {
     });
 });
 
-// Manejo de errores global
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(err.status || 500).json({
